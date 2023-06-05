@@ -1,2 +1,2 @@
-# python_ml_template
-This serves as the base template to ML project with Python
+# ML workflow template for Python
+This serves as the base template to ML project with Python.
