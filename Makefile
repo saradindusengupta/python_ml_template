@@ -1,6 +1,6 @@
 .ONESHELL:
 ENV_PREFIX=$(python3 -c "if __import__('pathlib').Path('.venv/bin/pip').exists(): print('.venv/bin/')")
-USING_POETRY=$(grep "tool.poetry" pyproject.toml && echo "yes")
+project_name = $("soc_estimation")
 
 .PHONY: help
 help:             ## Show the help.
@@ -13,27 +13,29 @@ help:             ## Show the help.
 .PHONY: show
 show:             ## Show the current environment.
 	@echo "Current environment:"
-	@if [ "$(USING_POETRY)" ]; then poetry env info && exit; fi
 	@echo "Running using $(ENV_PREFIX)"
 	@$(ENV_PREFIX)python -V
 	@$(ENV_PREFIX)python -m site
 
 .PHONY: install
 install:          ## Install the project in dev mode.
-	@if [ "$(USING_POETRY)" ]; then poetry install && exit; fi
 	@echo "Don't forget to run 'make virtualenv' if you got errors."
 	$(ENV_PREFIX)pip install -e .[test]
 
+.PHONY: build
+install:          ## Install the project in dev mode.
+	@echo "Build wheel file"
+	$(ENV_PREFIX)python -m build
+
 .PHONY: lint
 lint:             ## Run pep8, black, mypy linters.
-	$(ENV_PREFIX)flake8 soc_estimation/
-	$(ENV_PREFIX)black -l 79 --check soc_estimation/
+	$(ENV_PREFIX)flake8 src/$(project_name)/
+	$(ENV_PREFIX)black -l 79 --check src/$(project_name)/
 	$(ENV_PREFIX)black -l 79 --check tests/
-	$(ENV_PREFIX)mypy --ignore-missing-imports soc_estimation/
 
 .PHONY: test
 test: lint        ## Run tests and generate coverage report.
-	$(ENV_PREFIX)pytest -v --cov-config .coveragerc --cov=soc_estimation -l --tb=short --maxfail=1 tests/
+	$(ENV_PREFIX)pytest -v --cov-config .coveragerc --cov=src/$(project_name) -l --tb=short --maxfail=1 tests/
 	$(ENV_PREFIX)coverage xml
 	$(ENV_PREFIX)coverage html
 
@@ -51,7 +53,7 @@ clean:            ## Clean unused files.
 	@rm -rf .pytest_cache
 	@rm -rf .mypy_cache
 	@rm -rf build
-	@rm -rf dist
+	@rm -rf distsoc_estimation
 	@rm -rf *.egg-info
 	@rm -rf htmlcov
 	@rm -rf .tox/
@@ -59,7 +61,6 @@ clean:            ## Clean unused files.
 
 .PHONY: virtualenv
 virtualenv:       ## Create a virtual environment.
-	@if [ "$(USING_POETRY)" ]; then poetry install && exit; fi
 	@echo "creating virtualenv ..."
 	@rm -rf .venv
 	@python3 -m venv .venv
@@ -72,9 +73,9 @@ virtualenv:       ## Create a virtual environment.
 release:          ## Create a new tag for release.
 	@echo "WARNING: This operation will create s version tag and push to github"
 	@read -p "Version? (provide the next x.y.z semver) : " TAG
-	@echo "$${TAG}" > soc_estimation/VERSION
+	@echo "$${TAG}" > src/$(project_name)/VERSION
 	@$(ENV_PREFIX)gitchangelog > HISTORY.md
-	@git add soc_estimation/VERSION HISTORY.md
+	@git add $(project_name)/VERSION HISTORY.md
 	@git commit -m "release: version $${TAG} 🚀"
 	@echo "creating git tag : $${TAG}"
 	@git tag $${TAG}
@@ -84,25 +85,7 @@ release:          ## Create a new tag for release.
 .PHONY: docs
 docs:             ## Build the documentation.
 	@echo "building documentation with PyDoc ..."
-	@$(ENV_PREFIX)pdoc --force --html src/project_name --output docs/
-
-.PHONY: switch-to-poetry
-switch-to-poetry: ## Switch to poetry package manager.
-	@echo "Switching to poetry ..."
-	@if ! poetry --version > /dev/null; then echo 'poetry is required, install from https://python-poetry.org/'; exit 1; fi
-	@rm -rf .venv
-	@poetry init --no-interaction --name=a_flask_test --author=rochacbruno
-	@echo "" >> pyproject.toml
-	@echo "[tool.poetry.scripts]" >> pyproject.toml
-	@echo "soc_estimation = 'soc_estimation.__main__:main'" >> pyproject.toml
-	@cat requirements.txt | while read in; do poetry add --no-interaction "$${in}"; done
-	@cat requirements-test.txt | while read in; do poetry add --no-interaction "$${in}" --dev; done
-	@poetry install --no-interaction
-	@mkdir -p .github/backup
-	@mv requirements* .github/backup
-	@mv setup.py .github/backup
-	@echo "You have switched to https://python-poetry.org/ package manager."
-	@echo "Please run 'poetry shell' or 'poetry run soc_estimation'"
+	@$(ENV_PREFIX)pdoc --force --html src/$(project_name) --output docs/
 
 .PHONY: init
 init:             ## Initialize the project based on an application template.

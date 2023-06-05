@@ -1,6 +1,6 @@
 # How to develop on this project
 
-soc_estimation welcomes contributions from the community.
+Welcomes contributions.
 
 **You need PYTHON3!**
 
@@ -8,9 +8,9 @@ This instructions are for linux base systems. (Linux, MacOS, BSD, etc.)
 ## Setting up your own fork of this repo.
 
 - On github interface click on `Fork` button.
-- Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/soc_estimation.git`
-- Enter the directory `cd soc_estimation`
-- Add upstream repo `git remote add upstream https://github.com/Nunam-Energy/soc_estimation`
+- Clone your fork of this repo. `git clone git@github.com:YOUR_GIT_USERNAME/{project_name}.git`
+- Enter the directory `cd {project_name}`
+- Add upstream repo `git remote add upstream https://github.com/YOUR_GIT_USERNAME/{project_name}`
 
 ## Setting up your own virtual environment
 
@@ -20,6 +20,10 @@ then activate it with `source .venv/bin/activate`.
 ## Install the project in develop mode
 
 Run `make install` to install the project in develop mode.
+
+## Build the wheel files
+
+Run `make build` to build wheel file.
 
 ## Run the tests to ensure everything is working
 
@@ -33,17 +37,9 @@ Run `git checkout -b my_contribution`
 
 Edit the files using your preferred editor. (we recommend VIM or VSCode)
 
-## Format the code
-
-Run `make fmt` to format the code.
-
 ## Run the linter
 
 Run `make lint` to run the linter.
-
-## Test your changes
-
-Run `make test` to run the tests.
 
 Ensure code coverage report shows `100%` coverage, add tests to your PR.
 
@@ -79,15 +75,14 @@ Usage: make <target>
 Targets:
 help:             ## Show the help.
 install:          ## Install the project in dev mode.
-fmt:              ## Format code using black & isort.
-lint:             ## Run pep8, black, mypy linters.
+build:            ## Build the project wheel file.
+lint:             ## Run pep8, black.
 test: lint        ## Run tests and generate coverage report.
 watch:            ## Run tests on every change.
 clean:            ## Clean unused files.
 virtualenv:       ## Create a virtual environment.
 release:          ## Create a new tag for release.
 docs:             ## Build the documentation.
-switch-to-poetry: ## Switch to poetry package manager.
 init:             ## Initialize the project based on an application template.
 ```
 
@@ -97,6 +92,7 @@ This project uses [semantic versioning](https://semver.org/) and tags releases w
 Every time a new tag is created and pushed to the remote repo, github actions will
 automatically create a new release on github and trigger a release on PyPI.
 
+### Publishing to PyPI
 For this to work you need to setup a secret called `PIPY_API_TOKEN` on the project settings>secrets, 
 this token can be generated on [pypi.org](https://pypi.org/account/).
 
