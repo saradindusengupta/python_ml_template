@@ -1,5 +1,12 @@
 # Project Name
 
+Please run `Bootstrap Project` GitHub Action to bootstrap the project which will perform the following task
+
+- It defines the events that trigger the workflow, such as pushes or pull requests, and specifies the jobs and steps to be executed in response.
+- The workflow may include actions like checking out code, setting up environments, running tests, building artifacts, or deploying applications.
+- Each job runs in a fresh virtual environment and can be configured with specific runners, environment variables, and dependencies.
+- Customize this workflow to fit your project's CI/CD requirements.
+
 ## Structure of the Repository
 
 This repository uses `setuptool` to create packages and uses `toml` file for package configuration
