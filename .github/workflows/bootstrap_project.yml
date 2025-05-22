@@ -26,21 +26,59 @@ jobs:
             echo "Error: Directory src/project_name not found."
             exit 1
           fi
-  update_readme:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Update README title
-        run: |
-          # Replace the first line of README.md with the new project name
-          sed -i "1s/.*/${{ github.event.inputs.new_name }}/" README.md
-          echo "README.md title updated to ${{ github.event.inputs.new_name }}"
-
-      - name: Commit and push changes
+      
+      - name: Commit and push directory rename
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add src/ README.md
-          git commit -m "Rename project directory to ${{ github.event.inputs.new_name }} and update README title"
+          git add src/
+          git commit -m "Bootstrap: Rename project directory to ${{ github.event.inputs.new_name }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update_readme:
+    runs-on: ubuntu-latest
+    needs: rename_directory # Ensures it runs after rename is pushed
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3 # Checks out the repo with the renamed directory
+
+      - name: Update README title
+        run: |
+          # Replace the first line of README.md with the new project name as H1 title
+          sed -i "1s/.*/# ${{ github.event.inputs.new_name }}/" README.md
+          echo "README.md title updated to # ${{ github.event.inputs.new_name }}"
+
+      - name: Commit and push README changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git commit -m "Bootstrap: Update README title to ${{ github.event.inputs.new_name }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  add_codeowners:
+    runs-on: ubuntu-latest
+    needs: rename_directory # Can run after rename, in parallel with update_readme
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3 # Checks out the repo with the renamed directory
+
+      - name: Create CODEOWNERS file
+        run: |
+          mkdir -p .github
+          echo '* @saradindusengupta' > .github/CODEOWNERS
+          echo ".github/CODEOWNERS file created"
+
+      - name: Commit and push CODEOWNERS file
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .github/CODEOWNERS
+          git commit -m "Bootstrap: Add CODEOWNERS file"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
