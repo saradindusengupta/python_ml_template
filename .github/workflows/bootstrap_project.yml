@@ -1,0 +1,46 @@
+name: Bootstrap Project
+
+on:
+  workflow_dispatch:
+    inputs:
+      new_name:
+        description: 'New name for the project directory'
+        required: true
+        type: string
+
+jobs:
+  rename_directory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Rename directory
+        run: |
+          echo "Old directory name: project_name"
+          echo "New directory name: ${{ github.event.inputs.new_name }}"
+          if [ -d "src/project_name" ]; then
+            mv src/project_name src/${{ github.event.inputs.new_name }}
+            echo "Directory src/project_name renamed to src/${{ github.event.inputs.new_name }}"
+          else
+            echo "Error: Directory src/project_name not found."
+            exit 1
+          fi
+  update_readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update README title
+        run: |
+          # Replace the first line of README.md with the new project name
+          sed -i "1s/.*/${{ github.event.inputs.new_name }}/" README.md
+          echo "README.md title updated to ${{ github.event.inputs.new_name }}"
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add src/ README.md
+          git commit -m "Rename project directory to ${{ github.event.inputs.new_name }} and update README title"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
